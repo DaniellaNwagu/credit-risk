@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"name": "creditrisk",
+			"path": "../../../../../.."
+		},
+		{
+			"name": "cbfacademy",
+			"path": "../../../../../../../../cbfacademy"
+		}
+	],
+	"settings": {
+		"java.project.sourcePaths": [
+			""
+		]
+	}
+}
