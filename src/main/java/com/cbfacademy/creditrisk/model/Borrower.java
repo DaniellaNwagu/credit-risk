@@ -19,5 +19,44 @@ public class Borrower extends BaseEntity {
     private String employmentStatus;
     private Double annualIncome;
 
-    // Getters and setters omitted for brevity
+    // Getters 
+    public String getFirstName(){
+        return firstName;
+    }
+    public String getLastName(){
+        return lastName;
+    }
+    public LocalDate getDob(){
+        return dob;
+    }
+    public String getSsnNin(){
+        return ssnNin;
+    }
+    public String getEmploymentStatus(){
+        return employmentStatus;
+    }
+    public Double getAnnualIncome(){
+        return annualIncome;
+    }
+
+    //Setters
+    public void setFirstName(String firstName) {
+         this.firstName = firstName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public void setDob(LocalDate dob) {
+        this.dob = dob;
+    }
+    public void setSsnNin(String ssnNin) {
+        this.ssnNin = ssnNin;
+    }
+    public void setEmploymentStatus(String employmentStatus) {
+        this.employmentStatus = employmentStatus;
+    }
+    public void setAnnualIncome(Double annualIncome){
+        this.annualIncome = annualIncome;
+    }
+
 }
