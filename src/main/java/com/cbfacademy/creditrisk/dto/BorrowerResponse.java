@@ -10,6 +10,17 @@ public class BorrowerResponse {
     private String employmentStatus;
     private Double annualIncome;
 
+    public BorrowerResponse() {}
+
+    // All-args constructor (for easy mapping in test)
+    public BorrowerResponse(Long id, String firstName, String lastName, LocalDate dob, String employmentStatus, Double annualIncome) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dob = dob;
+        this.employmentStatus = employmentStatus;
+        this.annualIncome = annualIncome;
+    }
     // Getters & Setters
     public Long getId() { 
         return id;

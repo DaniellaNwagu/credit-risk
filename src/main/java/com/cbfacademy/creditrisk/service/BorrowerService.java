@@ -5,7 +5,6 @@ import com.cbfacademy.creditrisk.repository.BorrowerRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Service layer for Borrower operations.

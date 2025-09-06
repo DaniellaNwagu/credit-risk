@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * REST controller for Borrower endpoints.
- * Handles all CRUD operations (Create, Read, Update, Delete) for Borrowers.
- * Uses DTOs to decouple API contracts from persistence layer.
+ * REST controller for Borrower-related endpoints.
+ * Handles creation, retrieval, update, and deletion of Borrowers.
+ * Uses DTOs to decouple API contract from entity persistence.
  */
 @RestController
 @RequestMapping("/api/borrowers")
@@ -26,26 +26,18 @@ public class BorrowerController {
 
     /**
      * Create a new Borrower.
-     * @param request BorrowerRequest DTO containing borrower information
-     * @return BorrowerResponse DTO containing persisted borrower information
+     * @param request BorrowerRequest DTO containing input data
+     * @return BorrowerResponse DTO with saved borrower details
      */
     @PostMapping
     public BorrowerResponse createBorrower(@RequestBody BorrowerRequest request) {
-        Borrower borrower = new Borrower();
-        borrower.setFirstName(request.getFirstName());
-        borrower.setLastName(request.getLastName());
-        borrower.setDob(request.getDob());
-        borrower.setEmploymentStatus(request.getEmploymentStatus());
-        borrower.setAnnualIncome(request.getAnnualIncome());
-
+        Borrower borrower = mapToEntity(request);
         Borrower saved = borrowerRepository.save(borrower);
         return mapToResponse(saved);
     }
 
     /**
      * Retrieve a Borrower by ID.
-     * @param id Borrower ID
-     * @return BorrowerResponse DTO with borrower details
      */
     @GetMapping("/{id}")
     public BorrowerResponse getBorrower(@PathVariable Long id) {
@@ -56,7 +48,6 @@ public class BorrowerController {
 
     /**
      * Retrieve all Borrowers.
-     * @return List of BorrowerResponse DTOs
      */
     @GetMapping
     public List<BorrowerResponse> getAllBorrowers() {
@@ -68,9 +59,6 @@ public class BorrowerController {
 
     /**
      * Update an existing Borrower.
-     * @param id Borrower ID
-     * @param request BorrowerRequest DTO with updated information
-     * @return Updated BorrowerResponse DTO
      */
     @PutMapping("/{id}")
     public BorrowerResponse updateBorrower(@PathVariable Long id, @RequestBody BorrowerRequest request) {
@@ -89,7 +77,6 @@ public class BorrowerController {
 
     /**
      * Delete a Borrower by ID.
-     * @param id Borrower ID
      */
     @DeleteMapping("/{id}")
     public void deleteBorrower(@PathVariable Long id) {
@@ -97,9 +84,20 @@ public class BorrowerController {
     }
 
     /**
-     * Helper method to map Borrower entity to BorrowerResponse DTO.
-     * @param borrower Borrower entity
-     * @return BorrowerResponse DTO
+     * Map BorrowerRequest DTO to Borrower entity.
+     */
+    private Borrower mapToEntity(BorrowerRequest request) {
+        Borrower borrower = new Borrower();
+        borrower.setFirstName(request.getFirstName());
+        borrower.setLastName(request.getLastName());
+        borrower.setDob(request.getDob());
+        borrower.setEmploymentStatus(request.getEmploymentStatus());
+        borrower.setAnnualIncome(request.getAnnualIncome());
+        return borrower;
+    }
+
+    /**
+     * Map Borrower entity to BorrowerResponse DTO.
      */
     private BorrowerResponse mapToResponse(Borrower borrower) {
         BorrowerResponse response = new BorrowerResponse();

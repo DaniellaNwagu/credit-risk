@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  * REST controller for LoanApplication endpoints.
- * Handles all CRUD operations for loans, including risk grading and decision-making.
+ * Handles creation, retrieval, update, and deletion of loans.
  * Uses DTOs to decouple API contract from persistence layer.
  */
 @RestController
@@ -25,9 +25,7 @@ public class LoanApplicationController {
     private final BorrowerRepository borrowerRepository;
     private final LoanApplicationRepository loanApplicationRepository;
 
-    public LoanApplicationController(LoanApplicationService service,
-                                     BorrowerRepository borrowerRepository,
-                                     LoanApplicationRepository loanApplicationRepository) {
+    public LoanApplicationController(LoanApplicationService service, BorrowerRepository borrowerRepository, LoanApplicationRepository loanApplicationRepository) {
         this.service = service;
         this.borrowerRepository = borrowerRepository;
         this.loanApplicationRepository = loanApplicationRepository;
@@ -35,8 +33,6 @@ public class LoanApplicationController {
 
     /**
      * Create a new LoanApplication.
-     * @param request LoanApplicationRequest DTO with borrowerId and loan details
-     * @return LoanApplicationResponse DTO with persisted loan and risk decision
      */
     @PostMapping
     public LoanApplicationResponse createLoan(@RequestBody LoanApplicationRequest request) {
@@ -52,53 +48,38 @@ public class LoanApplicationController {
         LoanApplication saved = service.createLoanApplication(loan);
         return mapToResponse(saved);
     }
+    /**
+     * Retrieve a single LoanApplication by its ID.
+     * Used to check the status, risk score, and decision of a specific loan.
+     */
+    @GetMapping("/{id}")
+    public LoanApplicationResponse getLoanById(@PathVariable Long id) {
+        LoanApplication loan = loanApplicationRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Loan not found"));
+        return mapToResponse(loan);
+}
 
     /**
-     * Retrieve all LoanApplications or filter by risk grade.
-     * @param riskGrade Optional query parameter for filtering
-     * @return List of LoanApplicationResponse DTOs
+     * Retrieve loans, optionally filtered by risk grade.
      */
     @GetMapping
     public List<LoanApplicationResponse> getLoans(@RequestParam(required = false) String riskGrade) {
-        List<LoanApplication> loans = (riskGrade != null)
-                ? service.getLoansByRiskGrade(riskGrade)
-                : service.getLoansByRiskGrade("");
-
-        return loans.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Retrieve a single LoanApplication by ID.
-     * @param id LoanApplication ID
-     * @return LoanApplicationResponse DTO
-     */
-    @GetMapping("/{id}")
-    public LoanApplicationResponse getLoan(@PathVariable Long id) {
-        LoanApplication loan = loanApplicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Loan not found"));
-        return mapToResponse(loan);
+        List<LoanApplication> loans = service.getLoansByRiskGrade(riskGrade);
+        return loans.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     /**
      * Update an existing LoanApplication.
-     * @param id LoanApplication ID
-     * @param request LoanApplicationRequest DTO with updated info
-     * @return Updated LoanApplicationResponse DTO
      */
     @PutMapping("/{id}")
-    public LoanApplicationResponse updateLoan(@PathVariable Long id,
-                                              @RequestBody LoanApplicationRequest request) {
+    public LoanApplicationResponse updateLoan(@PathVariable Long id, @RequestBody LoanApplicationRequest request) {
         LoanApplication loan = loanApplicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Loan not found"));
 
-        if (!loan.getBorrower().getId().equals(request.getBorrowerId())) {
-            Borrower borrower = borrowerRepository.findById(request.getBorrowerId())
-                    .orElseThrow(() -> new RuntimeException("Borrower not found"));
-            loan.setBorrower(borrower);
-        }
+        Borrower borrower = borrowerRepository.findById(request.getBorrowerId())
+                .orElseThrow(() -> new RuntimeException("Borrower not found"));
 
+        loan.setBorrower(borrower);
         loan.setLoanAmount(request.getLoanAmount());
         loan.setTermMonths(request.getTermMonths());
         loan.setLoanType(request.getLoanType());
@@ -109,7 +90,6 @@ public class LoanApplicationController {
 
     /**
      * Delete a LoanApplication by ID.
-     * @param id LoanApplication ID
      */
     @DeleteMapping("/{id}")
     public void deleteLoan(@PathVariable Long id) {
@@ -117,19 +97,19 @@ public class LoanApplicationController {
     }
 
     /**
-     * Helper method to map LoanApplication entity to LoanApplicationResponse DTO.
-     * @param loan LoanApplication entity
-     * @return LoanApplicationResponse DTO
+     * Map LoanApplication entity to LoanApplicationResponse DTO.
      */
     private LoanApplicationResponse mapToResponse(LoanApplication loan) {
-        LoanApplicationResponse response = new LoanApplicationResponse();
-        response.setId(loan.getId());
-        response.setBorrowerId(loan.getBorrower().getId());
-        response.setLoanAmount(loan.getLoanAmount());
-        response.setTermMonths(loan.getTermMonths());
-        response.setLoanType(loan.getLoanType());
-        response.setRiskGrade(loan.getRiskGrade());
-        response.setDecision(loan.getDecision());
-        return response;
+    LoanApplicationResponse response = new LoanApplicationResponse();
+    response.setId(loan.getId());
+    response.setBorrowerId(loan.getBorrower().getId());
+    response.setLoanAmount(loan.getLoanAmount());
+    response.setTermMonths(loan.getTermMonths());
+    response.setLoanType(loan.getLoanType());
+    response.setRiskGrade(loan.getRiskGrade());
+    response.setDecision(loan.getDecision());
+    response.setRiskScore(loan.getRiskScore());  
+    return response;
     }
+
 }

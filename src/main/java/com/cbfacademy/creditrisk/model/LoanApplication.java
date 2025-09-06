@@ -17,7 +17,7 @@ public class LoanApplication extends BaseEntity {
     private Double loanAmount;
     private String loanType;
     private Integer termMonths;
-    private Double riskScore; // Calculated risk score
+    private double riskScore; // Calculated risk score
     private String riskGrade; // Low, Medium, High
     private String decision;  // Approve or Reject
 
@@ -38,7 +38,7 @@ public class LoanApplication extends BaseEntity {
         return termMonths;
     }
 
-    public Double getRiskScore() {
+    public double getRiskScore() {
         return riskScore;
     }
 
@@ -67,7 +67,7 @@ public class LoanApplication extends BaseEntity {
         this.termMonths = termMonths;
     }
 
-    public void setRiskScore(Double riskScore) {
+    public void setRiskScore(double riskScore) {
         this.riskScore = riskScore;
     }
 

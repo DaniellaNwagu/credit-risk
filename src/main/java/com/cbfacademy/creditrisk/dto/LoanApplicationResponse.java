@@ -8,6 +8,7 @@ public class LoanApplicationResponse {
     private String loanType;
     private String riskGrade;
     private String decision;
+    private double riskScore;
 
     // Getters & Setters
     public Long getId() { 
@@ -57,5 +58,12 @@ public class LoanApplicationResponse {
     }
     public void setDecision(String decision) {
          this.decision = decision; 
-        }
+     }
+
+     public double getRiskScore() {
+        return riskScore;
+     }
+     public void setRiskScore(double riskScore) {
+        this.riskScore = riskScore; 
+     }
 }
