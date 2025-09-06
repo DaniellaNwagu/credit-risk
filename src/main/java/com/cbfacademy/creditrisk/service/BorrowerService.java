@@ -2,49 +2,90 @@ package com.cbfacademy.creditrisk.service;
 
 import com.cbfacademy.creditrisk.model.Borrower;
 import com.cbfacademy.creditrisk.repository.BorrowerRepository;
-import com.cbfacademy.creditrisk.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Service layer for Borrower operations.
- * Handles business logic and data access.
+ * Centralizes business logic such as create, read, update, and delete.
+ * Keeps the controller thin and maintains separation of concerns.
  */
 @Service
 public class BorrowerService {
 
-    private final BorrowerRepository borrowerRepository;
+    private final BorrowerRepository repository;
 
-    public BorrowerService(BorrowerRepository borrowerRepository) {
-        this.borrowerRepository = borrowerRepository;
+    public BorrowerService(BorrowerRepository repository) {
+        this.repository = repository;
     }
 
+    /**
+     * Create a new Borrower.
+     * @param borrower Borrower entity to persist
+     * @return persisted Borrower
+     */
     public Borrower createBorrower(Borrower borrower) {
-        return borrowerRepository.save(borrower); // Persist new borrower
+        // Optional: add validation here (e.g., DOB in past, positive income)
+        validateBorrower(borrower);
+        return repository.save(borrower);
     }
 
-    public Borrower getBorrower(Long id) {
-        // Retrieve borrower, throw exception if not found
-        return borrowerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Borrower not found with id " + id));
+    /**
+     * Retrieve all Borrowers.
+     */
+    public List<Borrower> getAllBorrowers() {
+        return repository.findAll();
     }
 
-    public List<Borrower> getBorrowersByLastName(String lastName) {
-        return borrowerRepository.findByLastNameContainingIgnoreCase(lastName); // Filtered search
+    /**
+     * Retrieve a Borrower by ID.
+     */
+    public Borrower getBorrowerById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Borrower not found"));
     }
 
-    public Borrower updateBorrower(Long id, Borrower updated) {
-        Borrower borrower = getBorrower(id); // Validate existence
-        // Update key fields
-        borrower.setFirstName(updated.getFirstName());
-        borrower.setLastName(updated.getLastName());
-        borrower.setDob(updated.getDob());
-        borrower.setEmploymentStatus(updated.getEmploymentStatus());
-        borrower.setAnnualIncome(updated.getAnnualIncome());
-        return borrowerRepository.save(borrower); // Save updated record
+    /**
+     * Update an existing Borrower.
+     * @param borrower Borrower entity with updated fields
+     * @return updated Borrower
+     */
+    public Borrower updateBorrower(Borrower borrower) {
+        Borrower existing = repository.findById(borrower.getId())
+                .orElseThrow(() -> new RuntimeException("Borrower not found"));
+
+        existing.setFirstName(borrower.getFirstName());
+        existing.setLastName(borrower.getLastName());
+        existing.setDob(borrower.getDob());
+        existing.setEmploymentStatus(borrower.getEmploymentStatus());
+        existing.setAnnualIncome(borrower.getAnnualIncome());
+
+        validateBorrower(existing); // Optional validation
+        return repository.save(existing);
     }
 
+    /**
+     * Delete a Borrower by ID.
+     */
     public void deleteBorrower(Long id) {
-        borrowerRepository.delete(getBorrower(id)); // Safe delete after validation
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Borrower not found");
+        }
+        repository.deleteById(id);
+    }
+
+    /**
+     * Optional validation logic for Borrower.
+     */
+    private void validateBorrower(Borrower borrower) {
+        if (borrower.getAnnualIncome() < 0) {
+            throw new RuntimeException("Annual income cannot be negative");
+        }
+        if (borrower.getDob() == null) {
+            throw new RuntimeException("Date of birth is required");
+        }
+        // Additional rules can be added here
     }
 }

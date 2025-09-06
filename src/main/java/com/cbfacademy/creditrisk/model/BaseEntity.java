@@ -3,6 +3,7 @@ package com.cbfacademy.creditrisk.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 /**
  * BaseEntity provides common fields for all entities.
  * Demonstrates inheritance and adds automatic auditing.
