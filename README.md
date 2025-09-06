@@ -1,177 +1,229 @@
-# Credit Risk API 
-### Project: Credit Risk API
-### Package: `com.cbfacademy.creditrisk`
-### Artifact: `creditrisk`
-### Description: A Spring Boot RESTful API that connects to Experian’s Credit Data API, stores retrieved data in a local database, and computes credit risk metrics for analysis and decision-making.
-### Data Source: Experian Credit Data API (all customer + loan information). 
-------
 
-## 📖 Overview
-The **Credit Risk API** demonstrates how a financial institution could build an internal service on top of an external credit bureau (Experian).
+# Credit Risk API – Detailed Documentation
 
-It does three things:
-1. Fetch borrower & loan data from Experian API.
+## Project Overview
 
-2. Store data in a MySQL database for later queries and filtering.
-   
-3. Enrich data with credit risk metrics like:
-   
-   * Probability of Default (PD) → likelihood borrower might default
-     
-   * Loss Given Default (LGD) → estimated loss if borrower defaults
-     
-   * Exposure at Default (EAD) → how much money is at risk
-     
-   * Overall Risk Score & Risk Grade → final classification (Low, Medium, High)
-------
+The Credit Risk API is a Spring Boot RESTful service designed to manage borrowers and loan applications while performing basic credit risk assessment. The primary goal of this project is to demonstrate how an organization can internally manage credit risk data, calculate preliminary risk metrics, and make data-driven loan decisions without relying on external systems for each request.
 
-## 🎯 Purpose
-This project is designed to:
-+ Show how external credit bureau APIs can be integrated into a custom risk service.
-  
-+ Provide credit officers and analysts with stored, queryable data instead of hitting Experian directly each time.
+This project simulates a realistic credit risk workflow and provides a foundation for more advanced implementations, such as integration with external credit bureaus. 
 
-+ Demonstrate how to compute credit risk measures using bureau data.
-------
+## Objectives
 
-## ✨ Features
-✅ Connect to Experian API and retrieve credit data.
+**Borrower and Loan Management:**
+Provide CRUD operations for borrowers and loans using RESTful endpoints.
 
-✅ Store borrower and loan data locally in MySQL.
+**Risk Assessment:**
+Automatically calculate a Risk Score, Risk Grade, and Loan Decision for each loan application based on loan amount relative to a reference value.
 
-✅ Compute risk metrics (PD, LGD, EAD, Risk Score).
+**Data Storage:**
+Store all borrower and loan information in a local MySQL database for persistence and querying.
 
-✅ Categorize borrowers into risk grades (Low, Medium, High).
+**Professional API Design:**
+Implement DTOs, global exception handling, and layered architecture for maintainability and separation of concerns.
 
-✅ Make preliminary loan decisions (Approve / Reject).
+**Testing and Validation:**
+Provide unit tests to ensure correctness and consistency of the API.
 
-✅ Swagger UI for interactive documentation. 
+**Secure Database Configuration:**
+Allow users to configure database credentials in a local application.properties file to prevent committing passwords to source control and reduce the risk of data leaks.
 
-------
 
-## 🧮 Risk Assessment Logic
-The RiskService works as follows:
+## Core Features
 
-1. Call Experian API → fetch credit history, defaults, repayment records.
+### 1. Borrower Management
 
-2. Store results in the local database.
+**Endpoints:** `/api/borrowers`
 
-3. Compute:
+**Features:** Create, read, update, delete operations.
 
-   * PD → likelihood the borrower will default
+**Validation Rules:**
+- Annual income must be positive.
+- Date of birth must be provided.
 
-   * LGD → estimated loss if borrower defaults
 
-   * EAD → exposure amount at risk
+### 2. Loan Application Management
 
-   * Risk Score → combined model output
+**Endpoints:** `/api/loans`
 
-4. Assign Risk Grade + decision (Approve/Reject)
+**Features:**
+- Each loan application is linked to a borrower via a many-to-one JPA relationship.
+- Automatic risk assessment:
+  - **Risk Score:** 100 - (loanAmount / 10000) (clamped 0–100)
+  - **Risk Grade:** Low (≥75), Medium (≥50), High (<50)
+  - **Decision:** Reject if High; Approve otherwise
 
-**Example:**
-```Java
-{
-  "applicationId": 101,
-  "borrowerName": "John Doe",
-  "riskScore": 82,
-  "riskGrade": "Low",
-  "decision": "Approve",
-  "PD": 0.05,
-  "LGD": 0.4,
-  "EAD": 10000
-}
-```
-------
 
-## 🧑‍🤝‍🧑 User Stories
-+ Developer → “I want a `/health` endpoint so I know the service is running.”
+### 3. Global Exception Handling
 
-+ Credit Officer → “I want to fetch borrower credit data from Experian and store it locally.”
+Implemented via GlobalExceptionHandler with ResourceNotFoundException.
 
-+ Risk Analyst → “I want to calculate PD/LGD/EAD/RiskScore for each borrower.”
+Returns meaningful HTTP status codes:
+- 404 → Resource not found
+- 500 → Unexpected errors
 
-+ Manager → “I want to retrieve stored applications and track their credit risk.”
-------
 
-## 🗂 Data Flow
-```sql
-+------------------+       +---------------------+       +----------------+
-|  Experian API    | --->  |  Credit Risk API    | --->  |   MySQL DB     |
-| (Credit Data)    |       |  (Spring Boot)      |       | (Stored Data)  |
-+------------------+       +---------------------+       +----------------+
-                                |
-                                v
-                        +----------------+
-                        | RiskService    |
-                        | Computes PD,   |
-                        | LGD, EAD,      |
-                        | Risk Score     |
-                        +----------------+
-                                |
-                                v
-                        +----------------+
-                        | Swagger UI     |
-                        | Interactive    |
-                        | API docs       |
-                        +----------------+
-```
-+ Experian API: Provides credit data.
+### 4. Database Persistence
 
-+ Credit Risk API: Fetches data, stores locally, computes risk metrics.
+**Database:** MySQL
 
-+ MySQL DB: Stores all borrower and loan info for queries.
+**BaseEntity:** Provides id, createdAt, updatedAt for auditing.
 
-+ Swagger UI: Allows users to test endpoints without writing code.
-------
-## 🛠 Tech Stack
-+ **Java 17**
+**Inheritance:** Borrower and LoanApplication extend BaseEntity.
 
-+ **Spring Boot 3.5**
 
-+ **Spring Data JPA** → Database persistence
+**Configuration:**
+Create a local application.properties file:
 
-+ **MySQL** → Data storage
-
-+ **Spring Validation** → Input validation
-
-+ **Experian API** → External credit data
-
-+ **Springdoc OpenAPI** → Swagger UI
-
-+ **JUnit 5** → Unit testing
-------
-## 🚀 Getting Started
-**Prerequisites**
-
-+ Java 17+
-
-+ Maven
-
-+ MySQL
-
-+ Experian API credentials (API key required)
-
-**Setup**
-
-1. Clone the repo:
-```java
-git clone <repository-url>
-cd creditrisk
-```
-2. Configure database & Experian credentials in `application.properties`:
-```java
+```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/creditrisk_db
 spring.datasource.username=root
 spring.datasource.password=yourpassword
-
-experian.api.url=https://api.experian.com/credit-data
-experian.api.key=your_api_key_here
 ```
-3. Run the app:
-```java
+To load the sample data:
+
+```mysql -u root -p creditrisk_db < src/main/resources/data.sql```
+
+
+This prevents committing passwords to source control.
+
+**Sample Data:**
+The application includes sample data in `data.sql` with 5 borrowers and 6 loan applications for testing the API endpoints.
+
+
+### 5. Unit Testing
+
+**Unit Tests Added:**
+- **LoanApplicationTest** (8 tests) - Tests `LoanApplication` model class
+- **BorrowerServiceTest** (9 tests) - Tests `BorrowerService` class with mocked repository
+- **LoanApplicationServiceTest** (14 tests) - Tests `LoanApplicationService` class including risk scoring logic
+
+
+
+## API Examples
+
+### 1. Create Loan Application
+
+```http
+POST /api/loans
+Content-Type: application/json
+
+{
+  "borrowerId": 2,
+  "loanAmount": 20000.0,
+  "termMonths": 24,
+  "loanType": "Personal"
+}
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "borrowerId": 2,
+  "loanAmount": 20000.0,
+  "termMonths": 24,
+  "loanType": "Personal",
+  "riskScore": 98.0,
+  "riskGrade": "Low",
+  "decision": "Approve"
+}
+```
+
+### 2. Retrieve Loan by ID
+
+```http
+GET /api/loans/1
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "borrowerId": 2,
+  "loanAmount": 20000.0,
+  "termMonths": 24,
+  "loanType": "Personal",
+  "riskScore": 98.0,
+  "riskGrade": "Low",
+  "decision": "Approve"
+}
+```
+## Architecture
+
+The Credit Risk API follows a layered architecture:
+
+- *Model*: JPA entities (Borrower, LoanApplication) with BaseEntity inheritance
+- *Repository*: Spring Data JPA for database operations
+- *Service*: Business logic and risk assessment calculations
+- *Controller*: REST endpoints handling HTTP requests
+
+## Getting Started
+
+### 1. Prerequisites
+
+- Java 17+
+- Maven 3.8+
+- MySQL 8+
+
+### 2. Clone Repository
+
+```bash
+git clone <repository-url>
+cd creditrisk
+```
+
+### 3. Configure Database
+
+Create a MySQL database:
+
+```sql
+CREATE DATABASE creditrisk_db;
+```
+
+Create a local application.properties file (do not commit):
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/creditrisk_db
+spring.datasource.username=root
+spring.datasource.password=yourpassword
+spring.jpa.hibernate.ddl-auto=update
+```
+
+
+### 4. Build and Run the Application
+
+```bash
+mvn clean install
 mvn spring-boot:run
-
 ```
-4. Open Swagger UI:
-http://localhost:8080/swagger-ui.html
-------
+
+The service runs by default at: http://localhost:8080
+
+
+### 5. Testing the API
+
+**Example flows:**
+1. Create a borrower
+2. Submit a loan application
+3. Retrieve loan information and verify risk metrics
+
+### 6. Unit Testing
+
+**Run all tests:**
+
+```bash
+mvn test
+```
+
+All 31 unit tests run without database connection using Mockito for mocking repository dependencies.
+
+## Technologies Used
+
+- **Spring Boot 3.x**: Framework
+- **Spring Data JPA**: Database access
+- **MySQL**: Database
+- **JUnit 5**: Testing framework
+- **Mockito**: Mocking framework
+- **Maven**: Build tool
