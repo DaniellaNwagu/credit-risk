@@ -1,0 +1,1 @@
+mysqldump -u [root] -p [creditrisk_db] --no-create-info > src/main/resources/data.sql
