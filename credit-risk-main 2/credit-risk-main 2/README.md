@@ -150,6 +150,14 @@ GET /api/loans/1
   "decision": "Approve"
 }
 ```
+## Architecture
+
+The Credit Risk API follows a layered architecture:
+
+- *Model*: JPA entities (Borrower, LoanApplication) with BaseEntity inheritance
+- *Repository*: Spring Data JPA for database operations
+- *Service*: Business logic and risk assessment calculations
+- *Controller*: REST endpoints handling HTTP requests
 
 ## Getting Started
 
